@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гео-Бизнес: Аксиомы и Теоремы</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .math-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                <i data-lucide="shapes" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    ГЕО-БИЗНЕС
+                </h1>
+                <p class="text-xs text-slate-400">Аксиомы, Теоремы и Математический Расчёт</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="showInstructions()" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition flex items-center gap-1">
+                <i data-lucide="help-circle" class="w-4 h-4"></i> Правила Игры
+            </button>
+            <div class="text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+                v1.0.0 (Стабильная)
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Setup & Player list -->
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            <!-- Setup & Control Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-400">
+                    <i data-lucide="sliders" class="w-5 h-5"></i> Управление игрой
+                </h2>
+                
+                <!-- Game setup state -->
+                <div id="setup-panel">
+                    <label class="block text-xs font-semibold text-slate-400 mb-2">Выберите количество игроков:</label>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <button onclick="setPlayerCount(2)" id="btn-p2" class="py-2 rounded-lg bg-indigo-600 font-bold border border-indigo-500 text-white">2</button>
+                        <button onclick="setPlayerCount(3)" id="btn-p3" class="py-2 rounded-lg bg-slate-800 font-bold border border-slate-700 hover:bg-slate-700 transition">3</button>
+                        <button onclick="setPlayerCount(4)" id="btn-p4" class="py-2 rounded-lg bg-slate-800 font-bold border border-slate-700 hover:bg-slate-700 transition">4</button>
+                    </div>
+                    <button onclick="startGame()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-950/30 transition flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-5 h-5"></i> Начать Игру
+                    </button>
+                </div>
+
+                <!-- Active Game Controls -->
+                <div id="game-panel" class="hidden flex flex-col gap-4">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">Текущий ход</span>
+                        <div id="current-player-display" class="text-lg font-extrabold text-indigo-400">Игрок 1</div>
+                        <span id="player-balance-display" class="text-sm font-mono text-emerald-400 mt-1 block">1500 GEOM</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- Roll Dice -->
+                        <button id="roll-dice-btn" onclick="rollDice()" class="py-3 px-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 shadow-md">
+                            <i data-lucide="dices" class="w-6 h-6"></i>
+                            <span class="text-xs">Бросить кубики</span>
+                        </button>
+                        <!-- End Turn -->
+                        <button id="end-turn-btn" onclick="endTurn()" disabled class="py-3 px-2 bg-slate-800 text-slate-500 font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 border border-slate-700" style="cursor: not-allowed;">
+                            <i data-lucide="skip-forward" class="w-6 h-6"></i>
+                            <span class="text-xs">Завершить ход</span>
+                        </button>
+                    </div>
+
+                    <!-- Dice outcome visualization -->
+                    <div id="dice-container" class="flex justify-center gap-3 py-2">
+                        <div id="dice-1" class="w-12 h-12 bg-slate-800 border-2 border-indigo-500 rounded-xl flex items-center justify-center text-xl font-extrabold text-indigo-300 font-mono">-</div>
+                        <div id="dice-2" class="w-12 h-12 bg-slate-800 border-2 border-indigo-500 rounded-xl flex items-center justify-center text-xl font-extrabold text-indigo-300 font-mono">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players Status List -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex-1 flex flex-col">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-400">
+                    <i data-lucide="users" class="w-5 h-5"></i> Игроки и Капитал
+                </h2>
+                <div id="players-container" class="space-y-3 flex-1 overflow-y-auto max-h-[250px] lg:max-h-none">
+                    <!-- Loaded dynamically -->
+                    <p class="text-xs text-slate-500 italic">Настройте игру и нажмите "Начать Игру", чтобы увидеть участников.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Column: The Interactive Game Board -->
+        <div class="lg:col-span-6 flex flex-col items-center justify-center">
+            <!-- Custom circular/grid responsive board -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl w-full max-w-[620px] aspect-square flex flex-col justify-between relative overflow-hidden">
+                
+                <!-- Inner Dashboard / Info HUD inside the board -->
+                <div class="absolute inset-[24%] bg-slate-950 border-4 border-slate-800 rounded-2xl flex flex-col items-center justify-center p-4 text-center shadow-inner z-10">
+                    <div id="hud-default" class="space-y-2">
+                        <i data-lucide="compass" class="w-8 h-8 text-indigo-400 mx-auto animate-spin-slow"></i>
+                        <h3 class="text-sm font-extrabold text-slate-300 uppercase tracking-widest">Гео-Пространство</h3>
+                        <p class="text-[10px] text-slate-500 leading-relaxed px-2">Бросайте кубики, путешествуйте по секторам, доказывайте теоремы и стройте геометрическую империю!</p>
+                    </div>
+                    
+                    <div id="hud-cell" class="hidden space-y-2 w-full">
+                        <span id="hud-cell-category" class="text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full text-slate-200 bg-slate-800">Категория</span>
+                        <h4 id="hud-cell-name" class="text-md font-extrabold text-white">Название клетки</h4>
+                        <p id="hud-cell-desc" class="text-[10px] text-slate-400 max-h-[60px] overflow-y-auto px-1">Описание её свойств и стоимости.</p>
+                        <div id="hud-cell-actions" class="text-xs font-mono"></div>
+                    </div>
+                </div>
+
+                <!-- 16-Cell Outer Track Board Layout -->
+                <!-- Top Row (Cells 0-4) -->
+                <div class="grid grid-cols-5 gap-2 h-[20%] w-full">
+                    <!-- Cell 0: Start / Старт -->
+                    <div id="cell-0" class="border border-slate-700 bg-gradient-to-br from-indigo-900/60 to-slate-900 rounded-lg p-2 flex flex-col justify-between cursor-pointer hover:border-indigo-400 transition relative">
+                        <div class="text-[9px] font-extrabold text-emerald-400 uppercase">Старт</div>
+                        <div class="text-[9px] text-slate-400">+200 GEOM</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-0"></div>
+                    </div>
+                    <!-- Cell 1: Равнобедренный треугольник -->
+                    <div id="cell-1" onclick="selectCell(1)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-pink-500 transition relative">
+                        <div class="h-1.5 bg-pink-500 rounded-full w-full mb-1"></div>
+                        <div class="text-[8px] font-bold truncate">Р/б Треугольник</div>
+                        <div class="text-[8px] font-mono text-slate-400 mt-auto">120 G</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-1"></div>
+                    </div>
+                    <!-- Cell 2: Аксиома -->
+                    <div id="cell-2" onclick="selectCell(2)" class="border border-slate-700 bg-blue-950/40 hover:bg-blue-900/20 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-blue-400 transition relative">
+                        <div class="text-[8px] text-blue-400 uppercase font-bold text-center">Аксиома</div>
+                        <i data-lucide="bookmark" class="w-4 h-4 mx-auto text-blue-400"></i>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-2"></div>
+                    </div>
+                    <!-- Cell 3: Прямоугольный треугольник -->
+                    <div id="cell-3" onclick="selectCell(3)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-pink-500 transition relative">
+                        <div class="h-1.5 bg-pink-500 rounded-full w-full mb-1"></div>
+                        <div class="text-[8px] font-bold truncate">П/у Треугольник</div>
+                        <div class="text-[8px] font-mono text-slate-400 mt-auto">160 G</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-3"></div>
+                    </div>
+                    <!-- Cell 4: Теорема -->
+                    <div id="cell-4" onclick="selectCell(4)" class="border border-slate-700 bg-rose-950/40 hover:bg-rose-900/20 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-rose-400 transition relative">
+                        <div class="text-[8px] text-rose-400 uppercase font-bold text-center">Теорема</div>
+                        <i data-lucide="graduation-cap" class="w-4 h-4 mx-auto text-rose-400"></i>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-4"></div>
+                    </div>
+                </div>
+
+                <!-- Middle Section: Left & Right cells -->
+                <div class="flex justify-between h-[56%] w-full my-2">
+                    <!-- Left Column (Cells 15 to 12) top-to-bottom representation -->
+                    <div class="flex flex-col justify-between w-[20%] h-full gap-2">
+                        <!-- Cell 15: Равносторонний Треугольник -->
+                        <div id="cell-15" onclick="selectCell(15)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-pink-500 transition relative">
+                            <div class="h-1.5 bg-pink-500 rounded-full w-full mb-1"></div>
+                            <div class="text-[8px] font-bold truncate">Р/с Треугольник</div>
+                            <div class="text-[8px] font-mono text-slate-400 mt-auto">200 G</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-15"></div>
+                        </div>
+                        <!-- Cell 14: Аксиома -->
+                        <div id="cell-14" onclick="selectCell(14)" class="border border-slate-700 bg-blue-950/40 hover:bg-blue-900/20 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-blue-400 transition relative">
+                            <div class="text-[8px] text-blue-400 uppercase font-bold text-center">Аксиома</div>
+                            <i data-lucide="bookmark" class="w-4 h-4 mx-auto text-blue-400"></i>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-14"></div>
+                        </div>
+                        <!-- Cell 13: Круговой сектор -->
+                        <div id="cell-13" onclick="selectCell(13)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-amber-500 transition relative">
+                            <div class="h-1.5 bg-amber-500 rounded-full w-full mb-1"></div>
+                            <div class="text-[8px] font-bold truncate">Круговой сектор</div>
+                            <div class="text-[8px] font-mono text-slate-400 mt-auto">280 G</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-13"></div>
+                        </div>
+                        <!-- Cell 12: Эллипс -->
+                        <div id="cell-12" onclick="selectCell(12)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-amber-500 transition relative">
+                            <div class="h-1.5 bg-amber-500 rounded-full w-full mb-1"></div>
+                            <div class="text-[8px] font-bold truncate">Эллипс</div>
+                            <div class="text-[8px] font-mono text-slate-400 mt-auto">320 G</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-12"></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Cells 5 to 8) top-to-bottom representation -->
+                    <div class="flex flex-col justify-between w-[20%] h-full gap-2">
+                        <!-- Cell 5: Параллелограмм -->
+                        <div id="cell-5" onclick="selectCell(5)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-violet-500 transition relative">
+                            <div class="h-1.5 bg-violet-500 rounded-full w-full mb-1"></div>
+                            <div class="text-[8px] font-bold truncate">Параллелограмм</div>
+                            <div class="text-[8px] font-mono text-slate-400 mt-auto">180 G</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-5"></div>
+                        </div>
+                        <!-- Cell 6: Ромб -->
+                        <div id="cell-6" onclick="selectCell(6)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-violet-500 transition relative">
+                            <div class="h-1.5 bg-violet-500 rounded-full w-full mb-1"></div>
+                            <div class="text-[8px] font-bold truncate">Ромб</div>
+                            <div class="text-[8px] font-mono text-slate-400 mt-auto">220 G</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-6"></div>
+                        </div>
+                        <!-- Cell 7: Теорема -->
+                        <div id="cell-7" onclick="selectCell(7)" class="border border-slate-700 bg-rose-950/40 hover:bg-rose-900/20 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-rose-400 transition relative">
+                            <div class="text-[8px] text-rose-400 uppercase font-bold text-center">Теорема</div>
+                            <i data-lucide="graduation-cap" class="w-4 h-4 mx-auto text-rose-400"></i>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-7"></div>
+                        </div>
+                        <!-- Cell 8: Логический тупик -->
+                        <div id="cell-8" onclick="selectCell(8)" class="border border-slate-700 bg-red-950/60 hover:bg-red-900/40 rounded-lg p-1.5 flex flex-col justify-between h-1/4 cursor-pointer hover:border-red-500 transition relative">
+                            <div class="text-[8px] text-red-400 uppercase font-bold text-center">Тупик</div>
+                            <i data-lucide="brain-circuit" class="w-5 h-5 mx-auto text-red-500"></i>
+                            <div class="text-[7px] text-slate-400 text-center">Софизм</div>
+                            <div class="flex flex-wrap gap-1 mt-1" id="cell-players-8"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row (Cells 11 to 9) left-to-right representation -->
+                <div class="grid grid-cols-5 gap-2 h-[20%] w-full">
+                    <!-- Cell 11: Налоги -->
+                    <div id="cell-11" onclick="selectCell(11)" class="border border-slate-700 bg-amber-950/30 hover:bg-amber-900/10 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-amber-400 transition relative">
+                        <div class="text-[8px] text-amber-400 uppercase font-bold text-center">Налог</div>
+                        <i data-lucide="receipt" class="w-4 h-4 mx-auto text-amber-400"></i>
+                        <div class="text-[8px] text-slate-400 font-mono text-center">150 G</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-11"></div>
+                    </div>
+                    <!-- Cell 10: Квадрат -->
+                    <div id="cell-10" onclick="selectCell(10)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-violet-500 transition relative">
+                        <div class="h-1.5 bg-violet-500 rounded-full w-full mb-1"></div>
+                        <div class="text-[8px] font-bold truncate">Квадрат</div>
+                        <div class="text-[8px] font-mono text-slate-400 mt-auto">260 G</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-10"></div>
+                    </div>
+                    <!-- Cell 9: Прямоугольник -->
+                    <div id="cell-9" onclick="selectCell(9)" class="border border-slate-700 bg-slate-900 hover:bg-slate-850 rounded-lg p-1.5 flex flex-col justify-between cursor-pointer hover:border-violet-500 transition relative">
+                        <div class="h-1.5 bg-violet-500 rounded-full w-full mb-1"></div>
+                        <div class="text-[8px] font-bold truncate">Прямоугольник</div>
+                        <div class="text-[8px] font-mono text-slate-400 mt-auto">240 G</div>
+                        <div class="flex flex-wrap gap-1 mt-1" id="cell-players-9"></div>
+                    </div>
+                    <!-- Cell 11 for alignment placeholder? No, this is an 11-cell structure so let's name correctly:
+                         We have 16 cells layout:
+                         Top: 0, 1, 2, 3, 4
+                         Right mid: 5, 6, 7, 8
+                         Bottom (r to l): 9, 10, 11
+                         Actually, standard 16 track:
+                         Row 1: 0, 1, 2, 3, 4 (5 cells)
+                         Right col down: 5, 6, 7, 8 (4 cells, corner 8)
+                         Bottom row left: 9, 10, 11 (3 cells)
+                         Left col up: 12, 13, 14, 15 (4 cells)
+                         Total: 0 to 15 (16 cells total).
+                         Let's configure bottom row accurately:
+                         Grid of 5 for bottom row: Left, Col2, Col3, Col4, Right.
+                         Actually, the CSS grid has 5 columns:
+                         From Left-to-Right:
+                         Cell 11 is 'Налоги' (actually it sits next to Cell 12 in the track).
+                         Let's match positions:
+                         - Bottom-left corner is next to 12. Let's make it Cell 11.
+                         - Bottom-middle-left is Cell 10.
+                         - Bottom-middle-right is Cell 9.
+                         - Bottom-right corner is Cell 8.
+                         Wait, the HTML code has grid-cols-5. Let's arrange it visually correctly.
+                    -->
+                    <!-- Left Corner of Bottom Row: Cell 11 (Налог) -->
+                    <!-- We'll assign standard index matching our JavaScript map array -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Game Logs & Active Property -->
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            <!-- Active Cards & Task Solver -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex-1 flex flex-col min-h-[300px]">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-400">
+                    <i data-lucide="award" class="w-5 h-5"></i> Экран испытаний
+                </h2>
+                
+                <!-- Dynamic Area for solving Theorems or receiving Axioms -->
+                <div id="challenge-area" class="flex-1 flex flex-col justify-center items-center text-center p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <div id="challenge-idle">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-slate-600 mx-auto mb-3"></i>
+                        <p class="text-xs text-slate-400 leading-relaxed">Встаньте на клетку <b class="text-blue-400">Аксиомы</b> или <b class="text-rose-400">Теоремы</b>, чтобы активировать интерактивный вызов.</p>
+                    </div>
+
+                    <!-- Axiom Card Active State -->
+                    <div id="challenge-axiom" class="hidden text-left w-full space-y-4">
+                        <span class="text-[10px] bg-blue-900 text-blue-300 font-extrabold px-3 py-1 rounded-full uppercase tracking-widest">Аксиома</span>
+                        <h3 id="axiom-title" class="text-lg font-bold text-white">Аксиома прямых</h3>
+                        <p id="axiom-text" class="text-xs text-slate-300 italic leading-relaxed">Через любые две точки можно провести прямую, и притом только одну.</p>
+                        <div class="bg-indigo-950/40 p-3 rounded-lg border border-indigo-900 text-xs text-indigo-300">
+                            <strong>Эффект:</strong> <span id="axiom-effect">Вы получаете бесплатный шаг вперед.</span>
+                        </div>
+                        <button onclick="dismissChallenge()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs transition">
+                            Принять истину
+                        </button>
+                    </div>
+
+                    <!-- Theorem Card Active State (Solver) -->
+                    <div id="challenge-theorem" class="hidden text-left w-full space-y-3">
+                        <span class="text-[10px] bg-rose-900 text-rose-300 font-extrabold px-3 py-1 rounded-full uppercase tracking-widest">Теорема (Вызов)</span>
+                        <h3 id="theorem-title" class="text-md font-bold text-white">Теорема Пифагора</h3>
+                        <p id="theorem-text" class="text-xs text-slate-300 leading-relaxed">Формулировка теоремы с пропуском...</p>
+                        
+                        <div class="space-y-2" id="theorem-options">
+                            <!-- Populated with dynamic quiz options -->
+                        </div>
+                        
+                        <div id="theorem-reward-info" class="text-[10px] text-emerald-400 font-mono mt-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Log -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl h-[250px] flex flex-col">
+                <h2 class="text-md font-bold mb-3 flex items-center justify-between text-indigo-400">
+                    <span class="flex items-center gap-2"><i data-lucide="terminal" class="w-4 h-4"></i> Журнал событий</span>
+                    <button onclick="clearLogs()" class="text-[10px] text-slate-500 hover:text-slate-300 font-normal">Очистить</button>
+                </h2>
+                <div id="log-container" class="flex-1 overflow-y-auto space-y-2 text-xs font-mono text-slate-300 pr-1">
+                    <div class="text-slate-500">[СИСТЕМА]: Игра ожидает настройки. Выберите число игроков и нажмите Старт!</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal for Instructions -->
+    <div id="instructions-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeInstructions()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-extrabold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="book-open" class="text-indigo-400"></i> Правила: Гео-Бизнес
+            </h3>
+            <div class="space-y-3 text-sm text-slate-300 max-h-[400px] overflow-y-auto pr-2">
+                <p>Добро пожаловать в мир, где доходы зависят от <strong>геометрической точности</strong>, а удача подчиняется законам логики!</p>
+                <h4 class="font-bold text-indigo-400 mt-2">1. Игровой процесс</h4>
+                <p>Каждый игрок начинает с капиталом в <strong>1500 GEOM</strong>. Бросайте кубики и двигайтесь по часовой стрелке по кругу.</p>
+                <h4 class="font-bold text-indigo-400 mt-2">2. Клетки Фигур (Свойства)</h4>
+                <p>Встав на свободную фигуру (Треугольник, Ромб, Квадрат), вы можете её купить. Если фигура принадлежит другому игроку, вы платите ему аренду. Чтобы повысить аренду, улучшайте свойства своих фигур!</p>
+                <h4 class="font-bold text-indigo-400 mt-2">3. Аксиомы и Теоремы</h4>
+                <ul class="list-disc pl-5 space-y-1 text-xs">
+                    <li><strong class="text-blue-400">Аксиомы:</strong> Не требуют доказательств. Просто дают приятные бонусы или мгновенное развитие.</li>
+                    <li><strong class="text-rose-400">Теоремы:</strong> Настоящие испытания. Ответьте на теоретический вопрос правильно, чтобы получить денежный грант! Ошибка приведет к потере денег на повторные исследования.</li>
+                </ul>
+                <h4 class="font-bold text-red-400 mt-2">4. Логический Тупик (Софизм)</h4>
+                <p>Если вы попадаете на клетку Тупика, вы временно теряете способность вести бизнес. Чтобы выйти, нужно либо выбросить дубль на кубиках, либо заплатить штраф 100 GEOM.</p>
+            </div>
+            <button onclick="closeInstructions()" class="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl transition">
+                Понятно, к игре!
+            </button>
+        </div>
+    </div>
+
+    <!-- Dialog Modal for Game Events (Buy property, pay rent, etc.) -->
+    <div id="event-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <div id="event-icon-container" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white bg-indigo-600">
+                <!-- Icon loaded dynamically -->
+            </div>
+            <h3 id="event-title" class="text-lg font-bold text-white mb-2">Название события</h3>
+            <p id="event-desc" class="text-xs text-slate-300 mb-6 leading-relaxed">Описание происходящего на этой клетке поля.</p>
+            <div id="event-actions" class="flex flex-col gap-2">
+                <!-- Buttons dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification system toast -->
+    <div id="toast" class="opacity-0 translate-y-4 pointer-events-none fixed bottom-6 right-6 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl z-50 transition-all duration-300 max-w-xs flex items-center gap-3">
+        <div class="p-2 bg-emerald-950/80 text-emerald-400 rounded-lg">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+        </div>
+        <p id="toast-message" class="text-xs font-semibold text-slate-200">Уведомление отправлено!</p>
+    </div>
+
+    <script>
+        // --- GAME DATABASE ---
+        const CELLS = [
+            { id: 0, name: "Старт", category: "start", desc: "Прохождение этой клетки дает +200 GEOM." },
+            { id: 1, name: "Равнобедренный Треугольник", category: "triangle", cost: 120, rent: [15, 45, 120, 250], currentUpgrade: 0, owner: null, color: "pink" },
+            { id: 2, name: "Аксиома Архимеда", category: "axiom", desc: "Используйте неопровержимый закон геометрии." },
+            { id: 3, name: "Прямоугольный Треугольник", category: "triangle", cost: 160, rent: [20, 60, 180, 360], currentUpgrade: 0, owner: null, color: "pink" },
+            { id: 4, name: "Теорема о внешнем угле", category: "theorem", desc: "Докажите теорему, чтобы получить финансирование." },
+            { id: 5, name: "Параллелограмм", category: "quad", cost: 180, rent: [25, 75, 220, 400], currentUpgrade: 0, owner: null, color: "violet" },
+            { id: 6, name: "Ромб", category: "quad", cost: 220, rent: [30, 90, 260, 500], currentUpgrade: 0, owner: null, color: "violet" },
+            { id: 7, name: "Теорема синусов", category: "theorem", desc: "Докажите теорему синусов, чтобы заявить о себе." },
+            { id: 8, name: "Логический софизм", category: "jail", desc: "Вы попали в Логический тупик (Софизм 2*2=5). Пропустите ход или заплатите штраф." },
+            { id: 9, name: "Прямоугольник", category: "quad", cost: 240, rent: [35, 100, 280, 540], currentUpgrade: 0, owner: null, color: "violet" },
+            { id: 10, name: "Квадрат", category: "quad", cost: 260, rent: [40, 120, 300, 600], currentUpgrade: 0, owner: null, color: "violet" },
+            { id: 11, name: "Аренда за Инструменты", category: "tax", desc: "Налог за износ линеек и транспортиров. Оплатите 150 GEOM." },
+            { id: 12, name: "Эллипс", category: "circle", cost: 320, rent: [50, 150, 450, 900], currentUpgrade: 0, owner: null, color: "amber" },
+            { id: 13, name: "Круговой сектор", category: "circle", cost: 280, rent: [45, 130, 400, 800], currentUpgrade: 0, owner: null, color: "amber" },
+            { id: 14, name: "Аксиома Евклида", category: "axiom", desc: "Параллельные прямые не пересекаются." },
+            { id: 15, name: "Равносторонний Треугольник", category: "triangle", cost: 200, rent: [28, 85, 240, 480], currentUpgrade: 0, owner: null, color: "pink" }
+        ];
+
+        const AXIOMS = [
+            { title: "Аксиома прямой", text: "Через любые две точки можно провести прямую, и притом только одну.", effect: "Мгновенно перенеситесь на 1 клетку вперёд и получите бонус.", type: "forward" },
+            { title: "Аксиома параллельных", text: "Через точку, не лежащую на данной прямой, можно провести только одну параллельную прямую.", effect: "Защитный купол: вы освобождаетесь от уплаты аренды до конца этого круга.", type: "shield" },
+            { title: "Аксиома порядка", text: "Из трёх точек на прямой одна и только одна лежит между двумя другими.", effect: "Банк возвращает вам часть налогов. Получите 100 GEOM.", type: "money" }
+        ];
+
+        const THEOREMS = [
+            {
+                title: "Теорема Пифагора",
+                text: "В прямоугольном треугольнике квадрат длины гипотенузы равен...",
+                options: [
+                    "Сумме квадратов длин катетов",
+                    "Разности квадратов длин катетов",
+                    "Произведению длин катетов",
+                    "Произведению гипотенузы на высоту"
+                ],
+                correct: 0,
+                reward: 200,
+                penalty: 50
+            },
+            {
+                title: "Сумма углов треугольника",
+                text: "Сумма углов любого плоского треугольника в евклидовом пространстве всегда равна...",
+                options: [
+                    "90 градусов",
+                    "180 градусов",
+                    "360 градусов",
+                    "Зависит от площади треугольника"
+                ],
+                correct: 1,
+                reward: 150,
+                penalty: 50
+            },
+            {
+                title: "Признак параллельности прямых",
+                text: "Если при пересечении двух прямых секущей, накрест лежащие углы...",
+                options: [
+                    "В сумме дают 180 градусов",
+                    "Являются тупыми",
+                    "Равны, то прямые параллельны",
+                    "Смежные между собой"
+                ],
+                correct: 2,
+                reward: 250,
+                penalty: 100
+            },
+            {
+                title: "Свойства вписанного угла",
+                text: "Вписанный угол, опирающийся на диаметр окружности, всегда является...",
+                options: [
+                    "Острым",
+                    "Тупым",
+                    "Прямым (90°)",
+                    "Равным 45°"
+                ],
+                correct: 2,
+                reward: 200,
+                penalty: 75
+            }
+        ];
+
+        // --- GAME STATE ---
+        let players = [];
+        let currentPlayerIndex = 0;
+        let playerCount = 2;
+        let gameActive = false;
+        let hasRolled = false;
+        let selectedCellIndex = null;
+        let currentChallengeData = null;
+
+        const PLAYER_COLORS = [
+            { bg: "bg-red-500", border: "border-red-600", text: "text-red-400", hex: "#ef4444" },
+            { bg: "bg-emerald-500", border: "border-emerald-600", text: "text-emerald-400", hex: "#10b981" },
+            { bg: "bg-amber-500", border: "border-amber-600", text: "text-amber-400", hex: "#f59e0b" },
+            { bg: "bg-pink-500", border: "border-pink-600", text: "text-pink-400", hex: "#ec4899" }
+        ];
+
+        // --- CORE FUNCTIONS ---
+        function setPlayerCount(count) {
+            playerCount = count;
+            for (let i = 2; i <= 4; i++) {
+                const btn = document.getElementById(`btn-p${i}`);
+                if (i === count) {
+                    btn.className = "py-2 rounded-lg bg-indigo-600 font-bold border border-indigo-500 text-white";
+                } else {
+                    btn.className = "py-2 rounded-lg bg-slate-800 font-bold border border-slate-700 hover:bg-slate-700 transition";
+                }
+            }
+            logSystem(`Выбрано игроков: ${count}`);
+        }
+
+        function startGame() {
+            players = [];
+            for (let i = 0; i < playerCount; i++) {
+                players.push({
+                    id: i,
+                    name: `Геометр ${i + 1}`,
+                    balance: 1500,
+                    position: 0,
+                    properties: [],
+                    inJail: false,
+                    jailTurns: 0,
+                    rentShield: false,
+                    color: PLAYER_COLORS[i]
+                });
+            }
+
+            // Reset Board Properties
+            CELLS.forEach(c => {
+                if (c.cost) {
+                    c.owner = null;
+                    c.currentUpgrade = 0;
+                }
+            });
+
+            currentPlayerIndex = 0;
+            gameActive = true;
+            hasRolled = false;
+
+            document.getElementById("setup-panel").classList.add("hidden");
+            document.getElementById("game-panel").classList.remove("hidden");
+
+            updateUI();
+            updateBoardPlayers();
+            logSystem("Игра началась! Первый ход делает Геометр 1.");
+            showToast("Игра успешно запущена!", "shapes");
+        }
+
+        function updateUI() {
+            if (!gameActive) return;
+
+            const p = players[currentPlayerIndex];
+            
+            // HUD Update
+            document.getElementById("current-player-display").textContent = p.name;
+            document.getElementById("current-player-display").className = `text-lg font-extrabold ${p.color.text}`;
+            document.getElementById("player-balance-display").textContent = `${p.balance} GEOM`;
+
+            // Active Panel State
+            const rollBtn = document.getElementById("roll-dice-btn");
+            const endBtn = document.getElementById("end-turn-btn");
+
+            if (hasRolled) {
+                rollBtn.disabled = true;
+                rollBtn.classList.add("opacity-50", "cursor-not-allowed");
+                endBtn.disabled = false;
+                endBtn.classList.remove("text-slate-500");
+                endBtn.classList.add("bg-emerald-600", "hover:bg-emerald-500", "text-white");
+                endBtn.style.cursor = "pointer";
+            } else {
+                rollBtn.disabled = false;
+                rollBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                endBtn.disabled = true;
+                endBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-500", "text-white");
+                endBtn.classList.add("text-slate-500");
+                endBtn.style.cursor = "not-allowed";
+            }
+
+            // Render Players Status Cards
+            const pContainer = document.getElementById("players-container");
+            pContainer.innerHTML = "";
+            players.forEach((player) => {
+                const isCurrent = player.id === currentPlayerIndex;
+                const card = document.createElement("div");
+                card.className = `p-3.5 rounded-xl border ${isCurrent ? 'border-indigo-500 bg-indigo-950/20' : 'border-slate-800 bg-slate-900/40'} flex justify-between items-center transition duration-200`;
+                
+                let playerBadges = '';
+                if (player.inJail) playerBadges += `<span class="text-[9px] bg-red-900 text-red-300 font-bold px-1.5 py-0.5 rounded ml-2">В ТУПИКЕ</span>`;
+                if (player.rentShield) playerBadges += `<span class="text-[9px] bg-blue-900 text-blue-300 font-bold px-1.5 py-0.5 rounded ml-2">ИММУНИТЕТ</span>`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full ${player.color.bg} block"></span>
+                        <div>
+                            <span class="font-bold text-sm ${isCurrent ? 'text-indigo-400' : 'text-slate-200'}">${player.name}</span>
+                            ${playerBadges}
+                            <span class="block text-[10px] text-slate-500">Позиция: ${CELLS[player.position].name}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-mono font-bold text-sm text-emerald-400">${player.balance} G</span>
+                        <span class="block text-[9px] text-slate-500">${player.properties.length} фигур</span>
+                    </div>
+                `;
+                pContainer.appendChild(player);
+                pContainer.appendChild(card);
+            });
+
+            // Sync visual tokens on board
+            updateBoardPlayers();
+        }
+
+        function updateBoardPlayers() {
+            // Clear current tokens from cells
+            for (let i = 0; i < 16; i++) {
+                const cellContainer = document.getElementById(`cell-players-${i}`);
+                if (cellContainer) cellContainer.innerHTML = "";
+            }
+
+            // Render new positions
+            players.forEach(p => {
+                const cellContainer = document.getElementById(`cell-players-${p.position}`);
+                if (cellContainer) {
+                    const token = document.createElement("span");
+                    token.className = `w-2.5 h-2.5 rounded-full ${p.color.bg} ring-2 ring-slate-900 inline-block animate-pulse`;
+                    token.title = p.name;
+                    cellContainer.appendChild(token);
+                }
+            });
+
+            // Update owners visual borders
+            CELLS.forEach((cell, idx) => {
+                const el = document.getElementById(`cell-${idx}`);
+                if (el && cell.owner !== null) {
+                    const ownerPlayer = players[cell.owner];
+                    el.style.borderColor = ownerPlayer.color.hex;
+                    
+                    // Show small indicator of property level
+                    let upgradeIndicator = el.querySelector(".upgrade-indicator");
+                    if (!upgradeIndicator) {
+                        upgradeIndicator = document.createElement("span");
+                        upgradeIndicator.className = "upgrade-indicator absolute top-1 right-1 text-[8px] font-mono font-extrabold px-1 rounded bg-slate-950 text-indigo-400 border border-indigo-900";
+                        el.appendChild(upgradeIndicator);
+                    }
+                    upgradeIndicator.textContent = `L${cell.currentUpgrade + 1}`;
+                } else if (el && cell.cost) {
+                    // Reset to standard border if owned by no one
+                    el.style.borderColor = "rgb(51 65 85)";
+                    const upgradeIndicator = el.querySelector(".upgrade-indicator");
+                    if (upgradeIndicator) upgradeIndicator.remove();
+                }
+            });
+        }
+
+        // --- INTERACTION ---
+        function rollDice() {
+            if (hasRolled || !gameActive) return;
+
+            const p = players[currentPlayerIndex];
+            
+            // Random values
+            const d1 = Math.floor(Math.random() * 6) + 1;
+            const d2 = Math.floor(Math.random() * 6) + 1;
+            const steps = d1 + d2;
+
+            document.getElementById("dice-1").textContent = d1;
+            document.getElementById("dice-2").textContent = d2;
+
+            logEvent(p, `выбросил кубики: ${d1} и ${d2} (сумма: ${steps})`);
+
+            if (p.inJail) {
+                if (d1 === d2) {
+                    p.inJail = false;
+                    p.jailTurns = 0;
+                    logSystem(`${p.name} выходит из Логического тупика за счёт дубля на кубиках!`);
+                    showToast("Вы выбрались из тупика!", "check-circle");
+                } else {
+                    p.jailTurns++;
+                    logSystem(`${p.name} остается в тупике. Попыток сделано: ${p.jailTurns}/3`);
+                    if (p.jailTurns >= 3) {
+                        p.inJail = false;
+                        p.balance = Math.max(0, p.balance - 100);
+                        logSystem(`${p.name} принудительно освобожден после 3 попыток. Штраф: 100 GEOM.`);
+                    }
+                    hasRolled = true;
+                    updateUI();
+                    return;
+                }
+            }
+
+            // Standard movement
+            const oldPos = p.position;
+            p.position = (p.position + steps) % 16;
+            
+            // Check pass Go
+            if (p.position < oldPos) {
+                p.balance += 200;
+                logEvent(p, "прошел круг сквозь Начало Системы Координат и получил грант +200 GEOM!");
+                showToast("+200 GEOM за круг!", "piggy-bank");
+            }
+
+            hasRolled = true;
+            updateUI();
+            
+            // Trigger action based on landing cell
+            handleLanding(p.position);
+        }
+
+        function endTurn() {
+            if (!hasRolled) return;
+
+            // Reset player turn state shields
+            const p = players[currentPlayerIndex];
+            if (p.rentShield) {
+                p.rentShield = false; // expires after 1 round
+            }
+
+            // Next player index
+            currentPlayerIndex = (currentPlayerIndex + 1) % playerCount;
+            hasRolled = false;
+            
+            // Reset Challenge Box
+            document.getElementById("challenge-idle").classList.remove("hidden");
+            document.getElementById("challenge-axiom").classList.add("hidden");
+            document.getElementById("challenge-theorem").classList.add("hidden");
+
+            updateUI();
+            logSystem(`Ход переходит к игроку ${players[currentPlayerIndex].name}`);
+        }
+
+        function handleLanding(position) {
+            const cell = CELLS[position];
+            const p = players[currentPlayerIndex];
+
+            selectCell(position);
+
+            if (cell.category === "start") {
+                // Done on step check
+            } else if (cell.category === "axiom") {
+                triggerAxiom();
+            } else if (cell.category === "theorem") {
+                triggerTheorem();
+            } else if (cell.category === "tax") {
+                p.balance = Math.max(0, p.balance - 150);
+                logEvent(p, "оплатил налог на чертежные инструменты 150 GEOM.");
+                showEventModal(
+                    "Финансовый Налог",
+                    "Налог за износ линеек и транспортиров в геометрическом мире! Списано 150 GEOM.",
+                    "receipt",
+                    "bg-amber-600",
+                    [{ text: "Оплатить", action: "closeEventModal()" }]
+                );
+            } else if (cell.category === "jail") {
+                p.inJail = true;
+                p.jailTurns = 0;
+                logEvent(p, "угодил в ЛОГИЧЕСКИЙ ТУПИК (Математический софизм 2*2=5)!");
+                showEventModal(
+                    "Логический Тупик",
+                    "Вы допустили фатальную софистическую ошибку в доказательствах и застряли. Для выхода выбросите дубль или заплатите 100 GEOM на следующем ходу.",
+                    "brain-circuit",
+                    "bg-red-600",
+                    [{ text: "Принять наказание", action: "closeEventModal()" }]
+                );
+            } else {
+                // It's a property (triangle, quad, circle)
+                if (cell.owner === null) {
+                    // Offer to buy
+                    showEventModal(
+                        "Свободное пространство",
+                        `Вы можете приобрести ${cell.name} за ${cell.cost} GEOM.\nБазовая аренда: ${cell.rent[0]} GEOM.`,
+                        "shapes",
+                        "bg-indigo-600",
+                        [
+                            { text: `Купить за ${cell.cost} G`, action: `buyProperty(${position})` },
+                            { text: "Отказаться", action: "closeEventModal()" }
+                        ]
+                    );
+                } else if (cell.owner === p.id) {
+                    // Owner is active player - offer upgrade
+                    const nextUpgrade = cell.currentUpgrade + 1;
+                    if (nextUpgrade < cell.rent.length) {
+                        const upgradeCost = Math.round(cell.cost * 0.6);
+                        showEventModal(
+                            "Улучшение структуры",
+                            `Вы владеете этим объектом. Желаете провести математический апгрейд структуры до Уровня ${nextUpgrade + 1} за ${upgradeCost} GEOM?\nАренда возрастет с ${cell.rent[cell.currentUpgrade]} до ${cell.rent[nextUpgrade]} GEOM.`,
+                            "sparkles",
+                            "bg-emerald-600",
+                            [
+                                { text: `Улучшить за ${upgradeCost} G`, action: `upgradeProperty(${position}, ${upgradeCost})` },
+                                { text: "Оставить как есть", action: "closeEventModal()" }
+                            ]
+                        );
+                    } else {
+                        showEventModal(
+                            "Идеальная Фигура",
+                            `Это пространство улучшено до максимально идеальной формы (Уровень ${cell.rent.length}). Она приносит колоссальный доход!`,
+                            "crown",
+                            "bg-amber-500",
+                            [{ text: "Отлично", action: "closeEventModal()" }]
+                        );
+                    }
+                } else {
+                    // Owned by another player
+                    if (p.rentShield) {
+                        logEvent(p, `активировал параллельный иммунитет и пролетел над чужим пространством ${cell.name} абсолютно бесплатно!`);
+                        showToast("Иммунитет сработал!", "shield");
+                    } else {
+                        const owner = players[cell.owner];
+                        const currentRent = cell.rent[cell.currentUpgrade];
+                        p.balance = Math.max(0, p.balance - currentRent);
+                        owner.balance += currentRent;
+                        logEvent(p, `оплатил аренду ${currentRent} GEOM игроку ${owner.name} на клетке ${cell.name}`);
+                        
+                        showEventModal(
+                            "Уплата Аренды",
+                            `Вы наступили на территорию игрока ${owner.name}. С вас списана арендная пошлина в размере ${currentRent} GEOM.`,
+                            "wallet",
+                            "bg-red-600",
+                            [{ text: "Оплатить", action: "closeEventModal()" }]
+                        );
+                    }
+                }
+            }
+            updateUI();
+        }
+
+        // --- PROPERTY TRANSACTIONS ---
+        function buyProperty(position) {
+            const cell = CELLS[position];
+            const p = players[currentPlayerIndex];
+
+            if (p.balance >= cell.cost) {
+                p.balance -= cell.cost;
+                cell.owner = p.id;
+                p.properties.push(position);
+                logEvent(p, `приобрел геометрическую площадь "${cell.name}" за ${cell.cost} GEOM!`);
+                showToast("Собственность оформлена!", "check-circle");
+                closeEventModal();
+                updateUI();
+            } else {
+                showToast("Недостаточно средств!", "alert-triangle");
+                logEvent(p, `попытался купить "${cell.name}", но у него не хватило бюджета.`);
+                // change modal content
+                showEventModal(
+                    "Мало активов",
+                    "Вашего бюджета недостаточно, чтобы приобрести данную научную площадь.",
+                    "alert-triangle",
+                    "bg-red-500",
+                    [{ text: "Продолжить", action: "closeEventModal()" }]
+                );
+            }
+        }
+
+        function upgradeProperty(position, cost) {
+            const cell = CELLS[position];
+            const p = players[currentPlayerIndex];
+
+            if (p.balance >= cost) {
+                p.balance -= cost;
+                cell.currentUpgrade++;
+                logEvent(p, `сделал апгрейд свойства "${cell.name}" до уровня ${cell.currentUpgrade + 1}.`);
+                showToast("Структура идеализирована!", "trending-up");
+                closeEventModal();
+                updateUI();
+            } else {
+                showToast("Недостаточно средств на апгрейд!", "alert-triangle");
+            }
+        }
+
+        // --- AXIOMS & THEOREMS GENERATION ---
+        function triggerAxiom() {
+            // Load random Axiom
+            const idx = Math.floor(Math.random() * AXIOMS.length);
+            const ax = AXIOMS[idx];
+            currentChallengeData = ax;
+
+            document.getElementById("challenge-idle").classList.add("hidden");
+            document.getElementById("challenge-theorem").classList.add("hidden");
+            
+            const axiomBox = document.getElementById("challenge-axiom");
+            axiomBox.classList.remove("hidden");
+
+            document.getElementById("axiom-title").textContent = ax.title;
+            document.getElementById("axiom-text").textContent = `«${ax.text}»`;
+            document.getElementById("axiom-effect").textContent = ax.effect;
+
+            // Apply active effects immediately
+            const p = players[currentPlayerIndex];
+            if (ax.type === "money") {
+                p.balance += 100;
+                logEvent(p, `получил 100 GEOM по аксиоме порядка.`);
+            } else if (ax.type === "shield") {
+                p.rentShield = true;
+                logEvent(p, `применил закон параллельных и обеспечил защиту от чужой аренды.`);
+            } else if (ax.type === "forward") {
+                p.position = (p.position + 1) % 16;
+                logEvent(p, `автоматически шагнул вперед благодаря неоспоримой силе Аксиомы.`);
+                // After 1 sec run handle landing to avoid instantly breaking interface loops
+                setTimeout(() => {
+                    handleLanding(p.position);
+                }, 1000);
+            }
+            updateUI();
+        }
+
+        function triggerTheorem() {
+            // Load random Theorem
+            const idx = Math.floor(Math.random() * THEOREMS.length);
+            const th = THEOREMS[idx];
+            currentChallengeData = th;
+
+            document.getElementById("challenge-idle").classList.add("hidden");
+            document.getElementById("challenge-axiom").classList.add("hidden");
+            
+            const theoremBox = document.getElementById("challenge-theorem");
+            theoremBox.classList.remove("hidden");
+
+            document.getElementById("theorem-title").textContent = th.title;
+            document.getElementById("theorem-text").textContent = th.text;
+            document.getElementById("theorem-reward-info").textContent = `Награда: +${th.reward} G / Ошибка: -${th.penalty} G`;
+
+            // Populate options
+            const optContainer = document.getElementById("theorem-options");
+            optContainer.innerHTML = "";
+            th.options.forEach((opt, oIdx) => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs transition active:scale-95 text-slate-200 block";
+                btn.onclick = () => solveTheorem(oIdx);
+                btn.textContent = `${oIdx + 1}. ${opt}`;
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function solveTheorem(optionIndex) {
+            const p = players[currentPlayerIndex];
+            const th = currentChallengeData;
+
+            if (optionIndex === th.correct) {
+                p.balance += th.reward;
+                logEvent(p, `правильно доказал теорему "${th.title}" и получил научный грант ${th.reward} GEOM!`);
+                showToast("Теорема успешно доказана!", "award");
+                showEventModal(
+                    "Защита Теоремы: Успех",
+                    `Потрясающе! Вы сформулировали теорему верно. Банк математических исследований выдал вам грант в размере ${th.reward} GEOM.`,
+                    "award",
+                    "bg-emerald-600",
+                    [{ text: "Отлично", action: "closeEventModal()" }]
+                );
+            } else {
+                p.balance = Math.max(0, p.balance - th.penalty);
+                logEvent(p, `ошибся при доказательстве "${th.title}" и потратил ${th.penalty} GEOM на повторные расчёты.`);
+                showToast("Ошибка в вычислениях!", "alert-circle");
+                showEventModal(
+                    "Защита Теоремы: Провал",
+                    `Ошибка в доказательстве! Правильный ответ: "${th.options[th.correct]}". Вы потратили ${th.penalty} GEOM на исправление работы в архивах.`,
+                    "x-circle",
+                    "bg-red-600",
+                    [{ text: "Понятно", action: "closeEventModal()" }]
+                );
+            }
+
+            dismissChallenge();
+            updateUI();
+        }
+
+        function dismissChallenge() {
+            document.getElementById("challenge-idle").classList.remove("hidden");
+            document.getElementById("challenge-axiom").classList.add("hidden");
+            document.getElementById("challenge-theorem").classList.add("hidden");
+            currentChallengeData = null;
+        }
+
+        // --- MAP CLICK PREVIEWS ---
+        function selectCell(idx) {
+            selectedCellIndex = idx;
+            const cell = CELLS[idx];
+
+            document.getElementById("hud-default").classList.add("hidden");
+            const cellHud = document.getElementById("hud-cell");
+            cellHud.classList.remove("hidden");
+
+            document.getElementById("hud-cell-category").textContent = cell.category.toUpperCase();
+            document.getElementById("hud-cell-name").textContent = cell.name;
+            
+            let description = cell.desc || "Геометрическое владение для извлечения налогов.";
+            if (cell.cost) {
+                const ownerName = cell.owner !== null ? players[cell.owner].name : "Отсутствует";
+                description = `Стоимость покупки: ${cell.cost} GEOM.\nВладелец: ${ownerName}.\nБазовая аренда: ${cell.rent[0]} G.\nТекущий апгрейд: Уровень ${cell.currentUpgrade + 1}.`;
+            }
+            document.getElementById("hud-cell-desc").innerText = description;
+
+            // Highlight chosen cell border on layout
+            for (let i = 0; i < 16; i++) {
+                const el = document.getElementById(`cell-${i}`);
+                if (el) {
+                    if (i === idx) {
+                        el.classList.add("ring-2", "ring-indigo-400");
+                    } else {
+                        el.classList.remove("ring-2", "ring-indigo-400");
+                    }
+                }
+            }
+        }
+
+        // --- NOTIFICATIONS & LOGS ---
+        function logEvent(player, action) {
+            const logContainer = document.getElementById("log-container");
+            const entry = document.createElement("div");
+            entry.className = "py-0.5 border-b border-slate-850";
+            entry.innerHTML = `<span class="${player.color.text} font-bold">[${player.name}]</span> ${action}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function logSystem(msg) {
+            const logContainer = document.getElementById("log-container");
+            const entry = document.createElement("div");
+            entry.className = "py-0.5 border-b border-slate-850 text-indigo-400";
+            entry.innerHTML = `<span class="text-indigo-400 font-bold">[СИСТЕМА]:</span> ${msg}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById("log-container").innerHTML = '<div class="text-slate-500">[СИСТЕМА]: Журнал событий очищен.</div>';
+        }
+
+        function showToast(message, iconName = "bell") {
+            const toast = document.getElementById("toast");
+            document.getElementById("toast-message").textContent = message;
+            toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
+            toast.classList.add("opacity-100", "translate-y-0");
+
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+                toast.classList.remove("opacity-100", "translate-y-0");
+            }, 3000);
+        }
+
+        // --- MODAL UTILS ---
+        function showEventModal(title, text, icon, colorClass, actions) {
+            document.getElementById("event-title").textContent = title;
+            document.getElementById("event-desc").innerText = text;
+            
+            const iconContainer = document.getElementById("event-icon-container");
+            iconContainer.className = `w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center text-white ${colorClass}`;
+            iconContainer.innerHTML = `<i data-lucide="${icon}" class="w-7 h-7"></i>`;
+            
+            const actionContainer = document.getElementById("event-actions");
+            actionContainer.innerHTML = "";
+            actions.forEach(act => {
+                const btn = document.createElement("button");
+                btn.className = "w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs transition active:scale-95 border border-slate-700";
+                btn.setAttribute("onclick", act.action);
+                btn.textContent = act.text;
+                actionContainer.appendChild(btn);
+            });
+
+            document.getElementById("event-modal").classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function closeEventModal() {
+            document.getElementById("event-modal").classList.add("hidden");
+        }
+
+        function showInstructions() {
+            document.getElementById("instructions-modal").classList.remove("hidden");
+        }
+
+        function closeInstructions() {
+            document.getElementById("instructions-modal").classList.add("hidden");
+        }
+
+        // On Load initialization
+        window.onload = function() {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
